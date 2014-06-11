@@ -5,7 +5,7 @@ define(["lodash"], function (_) {
      * lets the attribute be specified as the HTML attribute name instead of the JS property.
      */
     self.setAttribute = function (obj, attr, value) {
-        if ( attr === "class" ) {
+    	if ( attr === "class" ) {
             obj.className = value;
         }
         else if ( attr === "checked" ) {
@@ -26,7 +26,7 @@ define(["lodash"], function (_) {
         if (!attributes) { return; }
         _.each(attributes,
                 function (value, attr) {
-                    self.setAttribute(obj, attr, attr);
+                    self.setAttribute(obj, attr, value);
                 }
         );
     };

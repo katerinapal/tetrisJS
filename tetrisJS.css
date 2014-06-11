@@ -1,0 +1,14 @@
+@CHARSET "ISO-8859-1";
+
+table.tetrisJS {
+  border-collapse: collapse;
+}
+
+table.tetrisJS td {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  vertical-align: middle;
+  text-align: center;
+  background-color: black;
+}
