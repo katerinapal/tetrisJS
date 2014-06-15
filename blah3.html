@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>tetrisJS</title>
+<script src="https://cdn.rawgit.com/lodash/lodash/master/lodash.js" />
+<script>
+document.body.appendChild(document.createTextNode("Starting"));
+var _ = window.lodash;
+
+var defaultCell = {
+  dom: null,
+  color: "none",
+  canHold: true,
+  hasItem: false
+};
+var padTop = 2;
+var padBottom = 1;
+var padLeft = 1;
+var padRight = 1;
+
+var grid = [];
+for (var r = 0; r < padTop; r++) {
+  grid[r] = [];
+  var offset = 0;
+  for (var c = 0; c < padLeft; c++) {
+    grid[r][c + offset] = _.extend(_.clone(defaultCell, {
+      hasItem: true,
+      canHold: false
+    }));
+  }
+  offset = padLeft;
+  for (var c = 0; c < width; c++) {
+    grid[r][c + offset] = _.extend(_.clone(defaultCell, {
+      canHold: false
+    }));
+  }
+  offset = padLeft + width;
+  for (var c = 0; c < padRight; c++) {
+    grid[r][c + offset] = _.extend(_.clone(defaultCell, {
+      hasItem: true,
+      canHold: false
+    }));
+  }
+}
+
+document.body.appendChild(document.createTextNode("DONE"));
+</script>
+</head>
+<body>
+
+</body>
+</html>

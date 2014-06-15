@@ -1,0 +1,14 @@
+div {
+    display: block;
+    border:1px solid #000;
+    margin-left:10px;
+}
+div.testMessage {
+    display: none;
+    border:1px solid #000;
+    margin-left:10px;
+}
+
+div.testPassFail:hover + div {
+    display: block;
+}
