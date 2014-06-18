@@ -48,6 +48,21 @@ document.body.appendChild(document.createTextNode("DONE"));
 </script>
 </head>
 <body>
-
+<input onclick="change()" type="button" value="Open Curtain" id="myButton1" />
+<script>
+var but1 = document.createElement("INPUT");
+but1.type  = "button";
+but1.value = "Foo";
+var but2 = document.createElement("BUTTON");
+but2.type  = "button";
+but2.value = "Foo";
+console.log(">> "+but1+", "+but2+" : "+but2.text);
+document.body.appendChild(but1);
+document.body.appendChild(but2);
+function change()
+{
+    document.getElementById("myButton1").value="Close Curtain"; 
+}
+</script>
 </body>
 </html>

@@ -36,6 +36,15 @@ String.prototype.repeat = function( num ) {
     return new Array( num + 1 ).join( this );
 };
 
+function rgb2str ( rgb, opacity ) {
+    //check for null and undefined
+    opacity = ( opacity == null ) ? 1 : opacity;
+    rgb     = ( rgb == null ) ? [0, 0, 0] : rgb;
+    return "rgba("+rgb.concat(opacity).join(", ")+")";
+}
+
+function c2s (x,y) { return x+","+y; }
+
 /*    function moveShapeHandler( shape, event ) {
 if ( event.keyCode == "38" ) {
     shape.clear();

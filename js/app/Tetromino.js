@@ -24,7 +24,7 @@ define(["lodash", "dom", "app/shapeTemplates"], function (_, dom, shapeTemplates
 		this.board    = null;
 		this.x        = 0;
 		this.y        = 0;
-		this.color    = "white";
+		this.color    = [255, 255, 255];
 		this.name     = "?";
 		this.ghost    = false;
 		this.versions = [[]];
@@ -126,8 +126,8 @@ define(["lodash", "dom", "app/shapeTemplates"], function (_, dom, shapeTemplates
 	var thisP = Tetromino.prototype;
 	
 	// return the current grid of the current version.
-	thisP.getGrid = function () {
-		return this.versions[this.version];
+	thisP.getGrid = function ( inVersion ) {
+		return this.versions[inVersion == null ? this.version : inVersion];
 	};
 
 	// returns the current board and coordinates of this shape
@@ -136,78 +136,104 @@ define(["lodash", "dom", "app/shapeTemplates"], function (_, dom, shapeTemplates
 	};
 	
 	/*
-     * 
-     */
-	thisP.action = function ( action ) {
-
-		// don't do anything if this is not placed
-		if ( !this.board ) {
-			return;
-		}
-
-		var realwork = "_" + action;
-
-		if ( ! realwork in this ) {
-			err("A Tetromino can't do: "+action);
-			return;
-		}
-
-		var orig = this.getPlacement();
-
-		// actions reset the lockDelay
-		if ( this.locker ) {
-		    clearTimeout( this.locker );
-		}
-		
-		// erase the shape from the board.
-	    this.clear();
-	    
-	    // execute the action
-	    this[realwork].apply(this, arguments);
-
-		// make sure that the move/rotate didn't move any occupied cells off of the board.
-		this.x += this._offTheLeft  ();
-        this.x -= this._offTheRight ();
-        this.y -= this._offTheBottom();
-
-		// if this placement is OK, draw and start the lock, if appropriate
-		if ( !this.conflictsWithBoard() ) {
-		    this.draw();
-	        this._startLock();
-			return;
-		} 
-		
-		this.draw();
-	};
-	
-	// What really needs to be done for move actions.
-	thisP._moveLeft  = function () { this.x--; };
-    thisP._moveRight = function () { this.x++; };
-    thisP._moveDown  = function () { this.y++; };
-
-	/*
      * take the grid and rotate counter clockwise (left from the top POV..) This
      * assumes that all shapes are based on a square.
      */
-	thisP._rotateLeft = function () {
-		this.version = ( this.version === this.versions.length - 1 ) ? 0 : this.version + 1;
-		this.calcBounds();
-	};
-	
-	/*
+    thisP.rotateLeft = function () {
+        var ovr = {
+                x : 0,
+                y : 0,
+                version : ( this.version === this.versions.length - 1 ) ? 0 : this.version + 1
+        };
+       
+        // can maybe need to "kick" the shape as much as the number of empty spaces on the left.
+        // if that doesn't work, try kicking down one, then up one as well.
+        // if none of those work, don't rotate.
+        var xkicks = _.range(this.minX+1);
+        xkicks = _.uniq(xkicks.concat(_.range(this.width-this.maxX).map(
+                function (v) { return -1 * v; }
+        ))).sort(function (a,b) { return Math.abs(a) - Math.abs(b); });
+        var ykicks = [0,1,-1];
+        for (var xi=0; xi<xkicks.length; xi++) {
+            ovr.x = xkicks[xi];
+            for (var yi=0; yi<ykicks.length; yi++) {
+                ovr.y = ykicks[yi];
+                if ( !this.conflictsWithBoard(ovr) ) {
+                    this.clear();
+                    this.version = ovr.version;
+                    this.x += ovr.x;
+                    this.y += ovr.y;
+                    this.draw();
+                    this.calcBounds();
+                    return;
+                }
+            }
+        }
+    };
+    
+    /*
      * take the grid and rotate counter clockwise (left from the top POV..) This
      * assumes that all shapes are based on a square.
      */
-	thisP._rotateRight = function () {
-		this.version = ( this.version === 0 ) ? 3 : this.version - 1;
-		this.calcBounds();
-	};
+    thisP.rotateRight = function () {
+        var ovr = {
+                x : 0,
+                y : 0,
+                version : ( this.version === 0 ) ? 3 : this.version - 1
+        };
+       
+        // can maybe need to "kick" the shape as much as the number of empty spaces on the left.
+        // if that doesn't work, try kicking down one, then up one as well.
+        // if none of those work, don't rotate.
+        var xkicks = _.range(this.minX+1);
+        xkicks = _.uniq(xkicks.concat(_.range(this.width-this.maxX).map(
+                function (v) { return -1 * v; }
+        ))).sort(function (a,b) { return Math.abs(a) - Math.abs(b); });
+        var ykicks = [0,1,-1];
+        for (var xi=0; xi<xkicks.length; xi++) {
+            ovr.x = xkicks[xi];
+            for (var yi=0; yi<ykicks.length; yi++) {
+                ovr.y = ykicks[yi];
+                if ( !this.conflictsWithBoard(ovr) ) {
+                    this.clear();
+                    this.version = ovr.version;
+                    this.x += ovr.x;
+                    this.y += ovr.y;
+                    this.draw();
+                    this.calcBounds();
+                    return;
+                }
+            }
+        }
+    };
 	
-	// create methods to access actions.
-	["moveLeft", "moveRight", "moveDown", "rotateLeft", "rotateRight"].map(function (name) {
-		thisP[name] = function () { this.action(name); };
-	});
-
+    thisP.moveDown = function () {
+        if ( this.conflictsWithBoard( { y:1 }) ) {
+            return;
+        }
+        this.clear();
+        this.y++;
+        this.draw();
+    };
+    
+    thisP.moveLeft = function () {
+        if ( this.conflictsWithBoard( { x:-1 }) ) {
+            return;
+        }
+        this.clear();
+        this.x--;
+        this.draw();
+    };
+    
+    thisP.moveRight = function () {
+        if ( this.conflictsWithBoard( { x:1 }) ) {
+            return;
+        }
+        this.clear();
+        this.x++;
+        this.draw();
+    };
+    
 	// calculates and stores the local X of the left most and right most
     // occupied cell.
 	thisP.calcBounds = function () {
@@ -228,58 +254,26 @@ define(["lodash", "dom", "app/shapeTemplates"], function (_, dom, shapeTemplates
 		}
 	};
 
-	// see if we've gone off to the left.
-	// returns the number of blocks to shift to get the shape on the board.
-	thisP._offTheLeft = function () {
-		var err = -1*(this.x + this.minX);
-		if ( err > 0 ) {
-			return err;
-		}
-		return 0;
-	};
-
-    // see if we've gone off to the right.
-    // returns the number of blocks to shift to get the shape on the board.
-    thisP._offTheRight = function () {
-        var err = this.x + this.maxX - (this.board.width - 1);
-        if ( err > 0 ) {
-            return err;
-        }
-        return 0;
-    };
-
-    // see if we've gone off the bottom.
-    // returns the number of blocks to shift to get the shape on the board.
-    thisP._offTheBottom = function () {
-        var err = this.y + this.maxY - (this.board.height + this.board.topPad - 1);
-        msg("a> "+this.y+" + "+this.maxY+" - ("+this.board.height+" + "+this.board.topPad+" - 1) = "+err);
-        if ( err > 0 ) {
-            return err;
-        }
-        return 0;
-    };
-
 	/*
      * Check that none of the occupied cells in the shape intersect with an
      * occupied cell in the board.
-     * The optional offset lets you check what would happen on a move.
+     * The optional override lets you check what would happen on a move/rotate
      */
-	thisP.conflictsWithBoard = function ( offset ) {
+	thisP.conflictsWithBoard = function ( ovr ) {
 
-	    offset   = _.extend({ x:0, y:0 }, offset);
-
-	    var grid = this.getGrid();
-
-		for (var r=0; r<grid.length; r++) {
-			var y = r + this.y + offset.y;
+	    ovr       = _.extend({ x:0, y:0 }, ovr);
+	    var grid  = this.getGrid( ovr.version );
+	    var cells = [];
+	    for (var r=0; r<grid.length; r++) {
+			var y = r + this.y + ovr.y;
 			for (var c=0; c<grid[r].length; c++) {
-				var x = c + this.x + offset.x;
-				if ( grid[r][c] && this.board.grid[y][x] ) {
-					return true;
+				var x = c + this.x + ovr.x;
+				if ( x>=0 && grid[r][c] && this.board.grid[y][x].locked ) {
+				    return true;
 				}
 			}
 		}
-		return false;
+	    return false;
 	};
 
 	/*
@@ -288,7 +282,7 @@ define(["lodash", "dom", "app/shapeTemplates"], function (_, dom, shapeTemplates
 	 * The player has this amount of time to make another move before the lock happens.
 	 * The new move resets the lock.
 	 */
-    thisP._startLock = function () {
+    thisP.startLock = function () {
 
         if ( !this.conflictsWithBoard( {y:1}) ) {
             return false;
@@ -307,7 +301,7 @@ define(["lodash", "dom", "app/shapeTemplates"], function (_, dom, shapeTemplates
      * placement. set to the shapes color if the cell is occupied otherwise use
      * the boards color (clear)
      */
-	thisP.draw = function ( color ) {
+	thisP.draw = function ( color, border ) {
 
 		// don't do anything if this is not placed
 		if ( !this.board ) {
@@ -315,7 +309,8 @@ define(["lodash", "dom", "app/shapeTemplates"], function (_, dom, shapeTemplates
 		}
 
 		// use the inputted color, or the shapes color.
-		color = color || this.color;
+		color  = color  || this.color;
+		border = border || this.border;
 
 		// instead of having this.versions[this.version] everywhere...
 		var grid = this.getGrid();
@@ -335,16 +330,24 @@ define(["lodash", "dom", "app/shapeTemplates"], function (_, dom, shapeTemplates
                  */ 
 				if ( x >= 0 && x < this.board.grid[0].length
 				        && y >= 0 && y < this.board.grid.length
-				        && this.board.grid[y][x].canHold ) {
-					this.board.grid[y][x].dom.style.backgroundColor =
-					    grid[r][c] ? color : this.board.color;
+				        && this.board.grid[y][x].dom
+				        && !this.board.grid[y][x].locked
+				) {
+				    if ( grid[r][c] ) {
+				        this.board.grid[y][x].dom.style.backgroundColor = rgb2str(color);
+	                    this.board.grid[y][x].dom.style.borderColor     = rgb2str(border);
+				    }
+				    else {
+                        this.board.grid[y][x].dom.style.backgroundColor = rgb2str(this.board.color);
+					    this.board.grid[y][x].dom.style.borderColor     = rgb2str(this.board.color);
+				    }
 				}
 			}
 		}
 	};
 	
 	thisP.clear = function () {
-		this.draw(this.board.color);
+		this.draw(this.board.color, this.board.color);
 	};
 	
 	/*

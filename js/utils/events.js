@@ -23,7 +23,7 @@ define(function () {
 			dom.detachEvent("on" + event, handler);
 		}
 	}
-	
+
 	function handleBrowserDiffs ( event ) {
 		// Handle IE difference in stopping events from bubbling up.
 		if (!event.stopPropagation) {
@@ -74,7 +74,9 @@ define(function () {
 			return {dom: dom, type: type, handler: wrapHandler};
 		},
 		removeHandler : function (object) {
-			unregisterEventHandler(object.dom, object.type, object.handler);
+		    if ( object != null ) {
+		        unregisterHandler(object.dom, object.type, object.handler);
+		    }
 		}
 	};
 });
