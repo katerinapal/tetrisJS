@@ -31,7 +31,7 @@ function wait( secs ) {
         ;
 }
 
-// adding
+// adding a way to repeat a string N times (I only want for chars..)
 String.prototype.repeat = function( num ) {
     return new Array( num + 1 ).join( this );
 };
@@ -43,31 +43,5 @@ function rgb2str ( rgb, opacity ) {
     return "rgba("+rgb.concat(opacity).join(", ")+")";
 }
 
+// for debugging, I found myself doing this a lot in console.log...
 function c2s (x,y) { return x+","+y; }
-
-/*    function moveShapeHandler( shape, event ) {
-if ( event.keyCode == "38" ) {
-    shape.clear();
-    shape.rotateLeft();
-    shape.draw();
-}
-else if ( event.keyCode == "37" ) {
-    shape.clear();
-    shape.x--;
-    var lerr = shape.offTheLeft();
-    if ( lerr > 0 ) {
-        shape.x += lerr;
-    }
-    shape.draw();
-}
-else if ( event.keyCode == "39" ) {
-    shape.clear();
-    shape.x++;
-    var lerr = shape.offTheRight();
-    if ( lerr > 0 ) {
-        shape.x -= lerr;
-    }
-    shape.draw();
-}
-}
-*/

@@ -1,5 +1,8 @@
 /**
- * 
+ * This class keeps track of the score and level
+ * I up the level based on how some random web site says Tetris does it.
+ * I do the score the same.
+ * TSpins aren't scored.
  */
 
 define(
@@ -35,7 +38,6 @@ define(
             };
         
             thisP.update = function ( numRows ) {
-                msg("a> "+numRows);
                 if ( numRows === 1 ) {
                     this.score += 40 * (this.level + 1);
                 }

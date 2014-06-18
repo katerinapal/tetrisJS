@@ -22,6 +22,7 @@ define(["lodash"], function (_) {
         }
     };
 
+    // call setAttribute for an array of attributes.
     self.setAttributes = function ( obj, attributes ) {
         if (!attributes) { return; }
         _.each(attributes,
@@ -31,13 +32,18 @@ define(["lodash"], function (_) {
         );
     };
     
-    self.create = function( name, attributes ) {
+    /*
+     * Create a DOM object of type
+     * Then set the attributes.
+     * Any additional arguments are assumed to be children of the created object.
+     */
+    self.create = function( type, attributes ) {
         var obj;
-        if (name === "string") {
+        if (type === "string") {
             obj = document.createTextNode(attributes);
         }
         else {
-            obj = document.createElement(name);
+            obj = document.createElement(type);
             self.setAttributes(obj, attributes);
             addKids(obj, _.filter(arguments, function (v, i) { return i >= 2; }));
         }
@@ -45,6 +51,7 @@ define(["lodash"], function (_) {
         return obj;
     };
 
+    // wrapper to add the children.
     function addKids ( parent ) {
         for (var i=1; i<arguments.length; i++) {
             var child = arguments[i];
