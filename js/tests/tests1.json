@@ -1,0 +1,14 @@
+[
+	{
+		"title" : "Test2",
+		"board" : { "height" : 10, "width" : 10 , "topPad" : 0 },
+		"shape" : { "name" : "I", "x":1, "y":1 },
+		"tests" : [ //          action       expected result
+		          { "action" : "rotateLeft", "version" : 1, "x" : 1, "y" : 1 },
+		          { "action" : "rotateLeft", "version" : 2, "x" : 1, "y" : 1 },
+		          { "action" : "rotateLeft", "version" : 3, "x" : 1, "y" : 1 },
+		          { "action" : "rotateLeft", "version" : 4, "x" : 1, "y" : 1 },
+		          { "action" : "rotateLeft", "version" : 1, "x" : 1, "y" : 1 },
+		          ]
+	}
+]
