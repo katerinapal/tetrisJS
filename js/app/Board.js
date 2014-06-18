@@ -1,10 +1,28 @@
 /*
- * The base class for the whole game
+ * This creates the board that the game is played on.
+ * Boards are also used for the preview views (and later, maybe, the hold)
+ * The padTop is an invisible area in which the shapes are spawned.
+ * This is just like the main part of the board, except for the visibility.
+ * padLeft, padRight, padBottom - these are invisible regions.
+ *    Cells in these regions get their 'locked' property set.
+ *    This makes it easier to detect if a move or rotate moved off of the board.
+ *    Because it doesn't, instead it conflicts with the locked cell in the padding.
+ * 
  */
+
 define(
         [ "lodash", "dom", "app/Tetromino", "app/shapeTemplates" ],
+        
         function( _, dom, Tetromino, shapeTemplates ) {
+            // unique ID for each board created, just for debug.
             var ID = 0;
+
+            /**
+             * Constructor
+             * pass in overrides for defaults in an object.
+             * all properties of this object will be "extended" onto the Tetomino
+             */
+
             function Board( args ) {
 
                 this.ID = ++ID;
@@ -39,29 +57,28 @@ define(
                 // the height, width and topPad.
                 inpatt ? this.parsePattern( inpatt ) : this.makeGrid();
  
-                // this.dom.style.cssText = "border-collapse: collapse; border-spacing: 0; ";
                 this.dom.style.cssText = "border-collapse : separate ; border-spacing: 0; ";
             }
 
             var defaultCell = {
-                    dom     : null,
-                    color   : null,
-                    border  : null,
-                    canHold : true,
-                    locked  : false
+                    dom      : null,
+                    color    : null,
+                    border   : null,
+                    canHold  : true,
+                    hasShape : false,
+                    locked   : false
                 };
             
             var thisP = Board.prototype;
 
             thisP.makeDefaultTD = function() {
                 var cell = dom.create( "TD" );
-                //cell.style.borderCollapse = "collapse";
-                cell.style.cellPadding = 0;
-                cell.style.cellSpacing = 0;
-                cell.style.width = this.cellSize;
-                cell.style.height = this.cellSize;
+                cell.style.cellPadding     = 0;
+                cell.style.cellSpacing     = 0;
+                cell.style.width           = this.cellSize;
+                cell.style.height          = this.cellSize;
                 cell.style.backgroundColor = rgb2str(this.color);
-                cell.style.border = "1px solid "+rgb2str(this.color);
+                cell.style.border          = "1px solid "+rgb2str(this.color);
                 return cell;
             };
 
@@ -75,7 +92,7 @@ define(
                 alert("Doesn't work right now");
             };
 
-            // make an empty grid.
+            // Create the array and DOM table representing this board.
             thisP.makeGrid = function() {
                 
                 // set the defaultCell's color to be that of the board.
@@ -137,11 +154,9 @@ define(
                 }
 
             };
-
-            thisP.resetGrid = function () {
-                this.clearRows(0, this.grid.length);
-            };
             
+            // take the "numRows" rows after row "start" and remove color and border.
+            // only visible and padTop cells, ie "canHold" should be done.
             thisP.clearRows = function ( start, numRows ) {
                 for (var r=start; r<start+numRows; r++) {
                     for (var c=0; c<this.grid[r].length; c++) {
@@ -155,10 +170,16 @@ define(
                     }
                 }
             };
-            
+
+            // clears all rows.
+            thisP.resetGrid = function () {
+                this.clearRows(0, this.grid.length);
+            };
+
             /*
              * This locks a shape to the board.
              * This means board cells are colored and marked as having an item.
+             * The locked property is then set, so that later shapes know about it.
              */
             thisP.lockShape = function ( shape ) {
                 var grid = shape.getGrid();
@@ -176,13 +197,27 @@ define(
                     }
                 }
             };
-            
+
+            /*
+             * Look at all of the rows and remove any that are full.
+             * return the number of rows.
+             * First set game.state to CLEARING, the Game will wait for the state
+             *   to go back to PLAYING before continuing.
+             *   This is so that I could add a timeout so that I can color rows
+             *   to be removed gold for 50ms before actually removing.
+             *   The coloring was done in findFullRows.
+             */
             thisP.clearFullRows = function () {
+                this.game.state = CLEARING;
+
+                // create a list of all rows to be removed.
+                // also color them gold.
                 var fullRows = this.findFullRows();
                 if ( !fullRows.length ) {
                     this.game.state = PLAYING;
                     return 0;
                 }
+                
                 // wait a little before shifting down so that we can see the gold rows.
                 // but need to make sure that the clear and the state change wait.
                 var shiftTO = setTimeout(function ( self ) {
@@ -254,16 +289,24 @@ define(
                 return fullRows;
             };
 
-            //
+            /*
+             * Shift the board to account for removed rows.
+             * First calculate how much each row should shift down.
+             * Then starting at the bottom shift each row.
+             * The _copyCell call sets the border and background, if approriate.
+             */
             thisP.shiftDown = function ( fullRows ) {
 
                 // first figure out how much each row should be shifted down
                 var shiftBy = this.calcShiftBy( fullRows );
+                
                 for (var r=this.grid.length-1; r>=0; r-- ) {
                     // don't do anything if this row is shifted down by 0.
                     if ( shiftBy[r] === 0 ) {
                         continue;
                     }
+
+                    // clear the 'to' row.
                     this.clearRows(r+shiftBy[r], 1);
                     for ( var c=0; c<this.grid[r].length; c++) {
                         var from = this.grid[r][c];
@@ -277,6 +320,7 @@ define(
             };
             
             // figure out by how much each row needs to shift down.
+            // this is simply the number of rows below this one that were removed.
             thisP.calcShiftBy = function ( fullRows ) {
                 var shiftBy = new Array(this.grid.length);
                 for ( var r=0; r<this.grid.length; r++ ) {

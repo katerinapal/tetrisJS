@@ -26,7 +26,7 @@ define(["lodash", "dom", "app/shapeTemplates"], function (_, dom, shapeTemplates
 		this.y        = 0;
 		this.color    = [255, 255, 255];
 		this.name     = "?";
-		this.ghost    = false;
+		this.isGhost  = false;
 		this.versions = [[]];
 		this.version  = 0;
 		this.locker   = null;
@@ -309,7 +309,8 @@ define(["lodash", "dom", "app/shapeTemplates"], function (_, dom, shapeTemplates
 		}
 
 		// use the inputted color, or the shapes color.
-		color  = color  || this.color;
+		// if this is a ghost the color is that of the board, but keep the border.
+		color  = color  || this.isGhost ? this.board.color : this.color;
 		border = border || this.border;
 
 		// instead of having this.versions[this.version] everywhere...

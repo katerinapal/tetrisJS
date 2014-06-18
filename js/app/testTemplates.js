@@ -1,5 +1,6 @@
 /**
- * 
+ * Define tests to run in tetrisJSTests.js
+ * This is probably broken....
  */
 // Tetromino names : I O T Z S J L
 define(function () {

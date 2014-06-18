@@ -16,13 +16,16 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
     var SPEEDLIMIT = 25;
     var STARTSPEED = 250;
     
-    // state lookup, make global...
+    // game state lookup, make global so that everyone can see...
     PREGAME  = 0x1;
     COUNTING = 0x2;
     PLAYING  = 0x3;
     CLEARING = 0x4;
     PAUSED   = 0x5;
     
+    /*
+     * Constructor for the game.
+     */
     function TetrisGame( args ) {
         this.dom       = dom.create("div");
 
@@ -31,10 +34,7 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         this.score     = new Score();
         this.playBoard = new Board( { game : this, height : 20 } ); // FIXME
         this.menu      = new Menu ( this );
-        
-        // the gravity property controls how fast the shape drops.
-        this.gravity   = 1;
-        
+            
         // need to keep track of the setInterval so that pause and end game can stop it.
         this.moveInterval = null;
         this.moveStep     = null;
@@ -43,19 +43,26 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         this.shape     = null;
 
         // the ghost is a shadow down of the shape showing where it would be.
+        this.useGhost  = true;
         this.ghost     = null;
         
         // keep track of the next N shapes that will be dropped in.
         this.preview   = _.range(NUMPREVIEW).map(__prepPreview, this);
 
+        // place holder for the keyboard handler.
         this.kbdDnHandler = null;
-        this.kbdUpHandler = null;
+
         this.dom.appendChild( this.makeHTML() );
+        
         return;
     }
 
+    // to cut down on the typing.
     var thisP = TetrisGame.prototype;
 
+    // create a preview board.
+    // one for each preview.
+    // the first (exit of queue) will be grey.
     function __prepPreview (idx) {
         var init = {
             game      : this,
@@ -73,6 +80,7 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         return { board : brd, shape : null };
     }
     
+    // Creates the DOM objects to put in the browser.
     thisP.makeHTML = function () {
         // Create a div to contain the 
         this.msgText = dom.create("string", "");
@@ -106,6 +114,12 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         return layout;
     };
     
+    /*
+     * Start the game.
+     * Reset the score, remove the shape, clear the board and the previews.
+     * Fill up the preview queue.
+     * Then count down before actually playing.
+     */
     thisP.start = function() {
         this.state = COUNTING;
 
@@ -155,6 +169,8 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         
     };
     
+    // Handle key presses.
+    // Arrow keys don't register as keypress's so use key down.
     thisP.startKbdHandler = function () {
         var self = this;
         this.kbdDnHandle = ev.addHandler(document, "keydown", function ( event ) {
@@ -178,6 +194,8 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
                 else if ( event.keyCode == 38 ) { self.shape.rotateLeft();  } // up
                 else if ( event.keyCode == 90 ) { self.shape.rotateLeft();  } // z
                 else if ( event.keyCode == 88 ) { self.shape.rotateRight(); } // x
+                // redraw the ghost, if approriate.
+                self.drawGhost();
                 // this starts either lock or move
                 self.checkForLock();
             }
@@ -187,18 +205,22 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         });
     };
     
+    // wrapper to stop the keyboard handler
     thisP.stopKbdHandler = function () {
         if ( this.kbdDnHandle !== null ) {
             ev.removeHandler(this.kbdDnHandle);
         }
     };
 
-    // not sure what this is supposed to do...
-    // do linear from (level, step) of (1,STARTSPEED) to (15,SPEEDLIMIT)
-    // then cap at the SPEEDLIMT (25) and STARTSPEED(250)
+    /*
+     * calculate the number of ms it takes to drop one row.
+     * not sure how this is supposed to be done...
+     * do linear from (level, step) of (1,STARTSPEED) to (10,SPEEDLIMIT)
+     * then cap at the SPEEDLIMT (25) and STARTSPEED(250)
+     */
     thisP.calcMoveStep = function () {
-        this.moveStep = Math.floor(( SPEEDLIMIT - STARTSPEED )/(10 - 1) * ( this.score.level - 1 ) + STARTSPEED);
-        msg("<< "+this.moveStep);
+        this.moveStep = Math.floor(( SPEEDLIMIT - STARTSPEED )/(10 - 1) *
+            ( this.score.level - 1 ) + STARTSPEED);
         if ( this.moveStep > STARTSPEED ) {
             this.moveStep = STARTSPEED;
         }
@@ -207,7 +229,12 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         }
     };
 
-    // use timeout instead of interval to make it easier for gravity to be adjusted.
+    /*
+     * This is what moves the shape down automatically.
+     * Using a timeout here instead of interval for reasons that don't, in hindsight,
+     * make sense. But it doesn't matter much... so keep it.
+     * The next drop is started by the checkForLock call.
+     */
     thisP.moveShapeIter = function () {
 
         // if already moving, don't start a new chain.
@@ -224,6 +251,7 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         );
     };
     
+    // clears the timeout that will, soon, move the shape down one.
     thisP.stopMove = function () {
         if (this.moveInterval) {
             clearTimeout(this.moveInterval);
@@ -231,6 +259,13 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         }
     };
     
+    /*
+     * Looks to see if a lock should be started for this shape.
+     * A lock is started as soon as the next row down has locked cells lining up.
+     * The lock itself is delayed so that the player can keep moving.
+     * Each move resets the lock delay.
+     * If the moves make it so that the shape shouldn't be locked, start the move timer.
+     */
     thisP.checkForLock = function () {
         // can try for locks in multiple ways, so cancel any existing ones
         // before starting the next.
@@ -239,7 +274,7 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         // this means that the shape can't move down one, so start the lock.
         if ( this.shape.conflictsWithBoard( {y:1} ) ) {
             this.lockTimeout = setTimeout(function ( self ) {
-                    this.lockTimeout = null;
+                    self.lockTimeout = null;
                     self.lockShape( this.lockTimeout );
                 },
                 LOCKDELAY,
@@ -251,6 +286,7 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         return false;
     };
     
+    // clear the timeout that will soon lock the shape to the board.
     thisP.stopLock = function () {
         if (this.lockTimeout) {
             clearTimeout(this.lockTimeout);
@@ -258,6 +294,12 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         }
     };
     
+    /*
+     * Tell the board to lock the shape down.
+     * Board does the real work here.
+     * If any of the locked cells are in the padTop then the game is over.
+     * Otherwise, remove an filled rows.
+     */
     thisP.lockShape = function ( par ) {
         var plc = this.shape.y + this.shape.minY;
         this.playBoard.lockShape(this.shape);
@@ -267,7 +309,6 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
             this.menu.gameOver();
         }
         else {
-            this.state = CLEARING;
             var numrows = this.playBoard.clearFullRows();
             this.score.update(numrows);
             var wait4clear = setInterval( function (self) {
@@ -284,6 +325,8 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         }
     };
     
+    // end the game.
+    // this is only used for debugging from the console.
     thisP.stop = function() {
         this.state = PREGAME;
         this.stopLock();
@@ -291,6 +334,11 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         this.stopKbdHandler();
     };
 
+    /*
+     * Pause/Unpause the game.
+     * If pausing, stop the move, lock iterators and the kbd handler.
+     * If unpausing, start those up again...
+     */
     thisP.togglePause = function () {
         if ( this.state === PAUSED ) {
             this.state = PLAYING;
@@ -305,12 +353,44 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         }
     };
     
+    /*
+     * This is a 'hard drop'.
+     * Increase the speed of the drop to the maximum
+     */
     thisP.dropShape = function () {
         this.stopMove();
         this.moveStep = DROPSPEED;
         this.moveShapeIter();
     };
 
+    /*
+     * The ghost is a shadow of the shape, showing where it will go if dropped.
+     * The ghost is the same as the shape, but it's color is that of the board.
+     * Just the border is visible.
+     */
+    thisP.drawGhost = function () {
+
+        // if there is no ghost don't draw.
+        // if the shape is trying to lock, don't draw.
+        if ( !this.ghost || this.lockTimeout ) {
+            return;
+        }
+
+        this.ghost.clear();
+        this.ghost.x = this.shape.x;
+        this.ghost.y = this.shape.y;
+        this.ghost.version = this.shape.version;
+        
+        while ( !this.ghost.conflictsWithBoard( {y:1} ) ) {
+            this.ghost.y++;
+        }
+        
+        //FIXME - maybe don't draw the ghost if it overlaps with the shape
+        this.ghost.draw();
+
+    };
+    
+    // Need a list of potential shape names.
     var shapeNames = _.keys(shapeTemplates);
 
     /*
@@ -338,6 +418,17 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
             this.shape.x     = this.playBoard.padLeft + Math.ceil( (this.playBoard.width - this.shape.width ) /2 );
             this.shape.y     = 0;
             this.shape.draw();
+
+            if ( this.useGhost ) {
+                this.ghost =  new Tetromino( {
+                    name  : this.shape.name,
+                    board : this.shape.board,
+                    x     : this.shape.x,
+                    y     : this.shape.y,
+                    isGhost : true
+                });
+                this.drawGhost();
+            }
         }
 
         // shift the shapes up one.
