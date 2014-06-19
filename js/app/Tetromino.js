@@ -211,6 +211,7 @@ define(["lodash", "dom", "app/shapeTemplates"], function (_, dom, shapeTemplates
         if ( this.conflictsWithBoard( { y:1 }) ) {
             return;
         }
+
         this.clear();
         this.y++;
         this.draw();
@@ -334,13 +335,10 @@ define(["lodash", "dom", "app/shapeTemplates"], function (_, dom, shapeTemplates
 				        && this.board.grid[y][x].dom
 				        && !this.board.grid[y][x].locked
 				) {
+				    
 				    if ( grid[r][c] ) {
 				        this.board.grid[y][x].dom.style.backgroundColor = rgb2str(color);
 	                    this.board.grid[y][x].dom.style.borderColor     = rgb2str(border);
-				    }
-				    else {
-                        this.board.grid[y][x].dom.style.backgroundColor = rgb2str(this.board.color);
-					    this.board.grid[y][x].dom.style.borderColor     = rgb2str(this.board.color);
 				    }
 				}
 			}
