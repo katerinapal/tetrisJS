@@ -175,6 +175,11 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         var self = this;
         this.kbdDnHandle = ev.addHandler(document, "keydown", function ( event ) {
 
+            // can only move if there is a shape
+            if ( !self.shape ) {
+                return;
+            }
+            
             // If there is a lock queued up, cancel that.
             // it will be restarted, if appropriate, later.
             self.stopLock();
@@ -372,7 +377,7 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
 
         // if there is no ghost don't draw.
         // if the shape is trying to lock, don't draw.
-        if ( !this.ghost || this.lockTimeout ) {
+        if ( !this.shape || !this.ghost || this.lockTimeout ) {
             return;
         }
 
@@ -386,10 +391,12 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
         }
         
         //FIXME - maybe don't draw the ghost if it overlaps with the shape
+        //FIXME - maybe don't draw the ghost if it overlaps with the shape
+        // simple work around is to draw the shape again...
         this.ghost.draw();
-
+        this.shape.draw();
     };
-    
+
     // Need a list of potential shape names.
     var shapeNames = _.keys(shapeTemplates);
 
@@ -417,6 +424,7 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
             this.shape.board = this.playBoard;
             this.shape.x     = this.playBoard.padLeft + Math.ceil( (this.playBoard.width - this.shape.width ) /2 );
             this.shape.y     = 0;
+
             this.shape.draw();
 
             if ( this.useGhost ) {
