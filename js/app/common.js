@@ -10,9 +10,10 @@ requirejs.config( {
 } );
 
 // just to type less...
-function msg() {
+export function msg() {
     console.log( Array.prototype.join.call( arguments, "" ) );
 }
+
 function err() {
     console.error( Array.prototype.join.call( arguments, "" ) );
 }
@@ -24,7 +25,7 @@ function info() {
 }
 
 // pause everything for a number of milliseconds
-function wait( secs ) {
+export function wait(secs) {
     var start = new Date().getTime();
     var limit = start + secs;
     while ( new Date().getTime() < limit )
@@ -36,7 +37,7 @@ String.prototype.repeat = function( num ) {
     return new Array( num + 1 ).join( this );
 };
 
-function rgb2str ( rgb, opacity ) {
+export function rgb2str(rgb, opacity) {
     //check for null and undefined
     opacity = ( opacity == null ) ? 1 : opacity;
     rgb     = ( rgb == null ) ? [0, 0, 0] : rgb;

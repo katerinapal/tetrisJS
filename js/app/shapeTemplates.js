@@ -3,7 +3,7 @@
  * colors are RGB (will use rgba and add opacity on the fly)
  */
 
-define( {
+export default {
     I : {
         color   : [  0, 255, 255], // cyan
         border  : [127, 255, 255],
@@ -67,4 +67,4 @@ define( {
                    "   "
                    ]
     },
-} );
+};;
