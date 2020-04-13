@@ -1,3 +1,4 @@
+"use strict";
 requirejs( [ 'common' ], function() {
     requirejs( [ 'lodash', 'jquery', 'dom', 'events', 'app/TetrisGame' ],
 

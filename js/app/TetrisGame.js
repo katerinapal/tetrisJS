@@ -1,3 +1,4 @@
+"use strict";
 /**
  * The wrapper for the whole game
  */
@@ -17,11 +18,11 @@ define( [ "lodash", "dom", "events", "app/Board", "app/Score", "app/Menu",
     var STARTSPEED = 250;
     
     // game state lookup, make global so that everyone can see...
-    PREGAME  = 0x1;
-    COUNTING = 0x2;
-    PLAYING  = 0x3;
-    CLEARING = 0x4;
-    PAUSED   = 0x5;
+    var PREGAME  = 0x1;
+    var COUNTING = 0x2;
+    var PLAYING  = 0x3;
+    var CLEARING = 0x4;
+    var PAUSED   = 0x5;
     
     /*
      * Constructor for the game.

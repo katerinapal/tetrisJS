@@ -1,3 +1,4 @@
+"use strict";
 /**
  * This class keeps track of the score and level
  * I up the level based on how some random web site says Tetris does it.

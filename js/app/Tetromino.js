@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Base class for the Tetromino (official(?) name for the shapes. properties:
  * board - the board in which this shape is placed. x - the x coordinate at

@@ -1,3 +1,4 @@
+"use strict";
 /**
  * This is just to define the standard shapes
  * colors are RGB (will use rgba and add opacity on the fly)

@@ -1,3 +1,4 @@
+"use strict";
 /**
  * This module handles the Menu stuff.
  * While the game is playing there is only a pause/unpause button.

@@ -1,3 +1,4 @@
+"use strict";
 define(["lodash"], function (_) {
     var self = {};
     /*

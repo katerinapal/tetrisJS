@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Define tests to run in tetrisJSTests.js
  * This is probably broken....

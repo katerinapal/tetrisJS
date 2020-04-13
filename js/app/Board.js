@@ -1,3 +1,4 @@
+"use strict";
 /*
  * This creates the board that the game is played on.
  * Boards are also used for the preview views (and later, maybe, the hold)

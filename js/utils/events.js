@@ -1,3 +1,4 @@
+"use strict";
 /**
  * This is largely taken from Eloquent javascript.
  * Will look for a package later...
