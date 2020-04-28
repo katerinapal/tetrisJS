@@ -43,7 +43,11 @@ define(function () {
 			event.target = event.srcElement;
 		}
 		if ((event.toElement || event.fromElement) && !event.relatedTarget) {
-			event.relatedTarget = event.toElement || event.fromElement;
+			
+			//changed, in order to prevent exception
+			// event.relatedTarget = event.toElement || event.fromElement;
+
+			Object.defineProperty(event, 'relatedTarget', { value: event.toElement || event.fromElement});
 		}
 
 		// handle differences in how browsers report location of clicks.
