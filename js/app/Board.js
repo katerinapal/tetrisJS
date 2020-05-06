@@ -208,6 +208,10 @@ define(
              *   The coloring was done in findFullRows.
              */
             thisP.clearFullRows = function () {
+                
+                console.log('printing thisP');
+                console.log(this);
+
                 this.game.state = CLEARING;
 
                 // create a list of all rows to be removed.
@@ -235,6 +239,9 @@ define(
                             self.clearRows(0, num);
                             clearInterval(clearInt);
                             clearInt = null;
+
+                            console.log('printing callback\'s context');
+                            console.log(this);
 
                             //initial code
                             this.game.state = PLAYING;
