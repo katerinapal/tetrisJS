@@ -1,9 +1,4 @@
-/**
- * This is just to define the standard shapes
- * colors are RGB (will use rgba and add opacity on the fly)
- */
-
-define( {
+var shapeTemplates_obj = {
     I : {
         color   : [  0, 255, 255], // cyan
         border  : [127, 255, 255],
@@ -67,4 +62,6 @@ define( {
                    "   "
                    ]
     },
-} );
+};
+
+export { shapeTemplates_obj };

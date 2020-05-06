@@ -1,9 +1,4 @@
-/**
- * This is largely taken from Eloquent javascript.
- * Will look for a package later...
- */
-
-define(function () {
+var libraryObj_events = define(function () {
 	// large
 	// handle IE vs everyone else difference in event listeners.
 	function registerHandler ( dom, event, handler ) {
@@ -84,3 +79,5 @@ define(function () {
 		}
 	};
 });
+
+export default libraryObj_events;
