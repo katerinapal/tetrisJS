@@ -1,18 +1,4 @@
-/*!
- * jQuery JavaScript Library v1.11.1
- * http://jquery.com/
- *
- * Includes Sizzle.js
- * http://sizzlejs.com/
- *
- * Copyright 2005, 2014 jQuery Foundation, Inc. and other contributors
- * Released under the MIT license
- * http://jquery.org/license
- *
- * Date: 2014-05-01T17:42Z
- */
-
-(function( global, factory ) {
+var libraryObj_jquery = function( global, factory ) {
 
 	if ( typeof module === "object" && typeof module.exports === "object" ) {
 		// For CommonJS and CommonJS-like environments where a proper window is present,
@@ -10305,4 +10291,6 @@ if ( typeof noGlobal === strundefined ) {
 
 return jQuery;
 
-}));
+});
+
+export default libraryObj_jquery;
