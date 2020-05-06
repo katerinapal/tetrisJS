@@ -235,7 +235,10 @@ define(
                             self.clearRows(0, num);
                             clearInterval(clearInt);
                             clearInt = null;
-                            this.game.state = PLAYING;
+
+                            //changed in compliance to other references
+                            //of the same property
+                            self.game.state = PLAYING;
                         }
                     },
                     1,
