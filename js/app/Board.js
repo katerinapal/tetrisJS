@@ -235,7 +235,13 @@ define(
                             self.clearRows(0, num);
                             clearInterval(clearInt);
                             clearInt = null;
+
+                            //initial code
                             this.game.state = PLAYING;
+
+                            //2 alternatives: 
+                            // window.game.state = PLAYING;
+                            self.game.state = PLAYING;
                         }
                     },
                     1,
