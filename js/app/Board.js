@@ -240,6 +240,9 @@ define(
                             clearInterval(clearInt);
                             clearInt = null;
 
+                            console.log('printing self');
+                            console.log(self);
+
                             console.log('printing callback\'s context');
                             console.log(this);
 
