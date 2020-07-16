@@ -6,7 +6,9 @@
  * Copyright 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
  * Available under MIT license <http://lodash.com/license>
  */
-;(function() {
+;
+
+var libraryObj_lodash = function() {
 
   /** Used as a safe reference for `undefined` in pre ES5 environments */
   var undefined;
@@ -8930,4 +8932,6 @@
     // in a browser or Rhino
     root._ = _;
   }
-}.call(this));
+}.call(this);
+
+export default libraryObj_lodash;
