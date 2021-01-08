@@ -1,9 +1,4 @@
-/**
- * This is just to define the standard shapes
- * colors are RGB (will use rgba and add opacity on the fly)
- */
-
-define( {
+var mod_shapeTemplates = {
     I : {
         color   : [  0, 255, 255], // cyan
         border  : [127, 255, 255],
@@ -67,4 +62,6 @@ define( {
                    "   "
                    ]
     },
-} );
+};
+
+export { mod_shapeTemplates };
