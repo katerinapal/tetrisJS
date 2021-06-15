@@ -45,3 +45,7 @@ function rgb2str ( rgb, opacity ) {
 
 // for debugging, I found myself doing this a lot in console.log...
 function c2s (x,y) { return x+","+y; }
+var mod_rgb2str = rgb2str;
+export { mod_rgb2str as rgb2str };
+var mod_msg = msg;
+export { mod_msg as msg };
